@@ -1,0 +1,12 @@
+streamlit
+pandas 
+geopandas 
+matplotlib
+osmnx 
+pydeck
+osmnx
+folium
+pyproj
+fiona
+shapely
+
