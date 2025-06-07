@@ -13,8 +13,8 @@ st.set_page_config(page_title="City Road Network Explorer", layout="wide")
 @st.cache_data
 def load_data():
     # Replace with your actual paths or dynamic data sources
-    gdf_baguio = gpd.read_file("C:/Users/franj/notebooks/road_design/road-design/gpkg_exports/baguio_roads.gpkg")
-    gdf_zurich = gpd.read_file("C:/Users/franj/notebooks/road_design/road-design/gpkg_exports/zurich_roads.gpkg")
+    gdf_baguio = gpd.read_file("gpkg_exports/baguio_roads.gpkg")
+    gdf_zurich = gpd.read_file("gpkg_exports/zurich_roads.gpkg")
     return gdf_baguio, gdf_zurich
 
 gdf_baguio, gdf_zurich = load_data()
