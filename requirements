@@ -1,0 +1,8 @@
+streamlit
+pandas 
+geopandas 
+matplotlib.pyplot
+osmnx 
+pydeck
+osmnx
+folium
