@@ -1,8 +1,12 @@
 streamlit
 pandas 
 geopandas 
-matplotlib.pyplot
+matplotlib
 osmnx 
 pydeck
 osmnx
 folium
+pyproj
+fiona
+shapely
+
