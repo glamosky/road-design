@@ -16,8 +16,7 @@ from PIL import Image
 import base64
 import seaborn as sns
 
-st.set_page_config(page_title="City Road Network Explorer", layout="wide",  page_icon="🛣️",  # Optional emoji favicon
-    layout="wide",)
+st.set_page_config(page_title="City Road Network Explorer", layout="wide",  page_icon="🛣️",  emoji faviconlayout="wide",)
 
 st.image("baguio and zurich collage.png")
 # ----------------------
