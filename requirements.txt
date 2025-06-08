@@ -4,11 +4,12 @@ geopandas
 matplotlib
 osmnx 
 pydeck
-osmnx
+networkx
+Pillow
+seaborn
 folium
 pyproj
 fiona
 shapely
 streamlit-folium
 numpy
-
