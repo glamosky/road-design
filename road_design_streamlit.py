@@ -1064,59 +1064,142 @@ elif app_mode == "Route Finder":
         
     # Map for selecting points
     st.subheader("Select Start and End Points")
-    st.markdown("Click on the map to select the start and end points for routing.")
+    st.markdown("Use the inputs below to select start and end points for routing.")
     
-    # Create base map
-    m = folium.Map(
-        location=[gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()],
-        zoom_start=13,
-        tiles="CartoDB positron"
-    )
-    
-    # Add road network
-    folium.GeoJson(
-        gdf.__geo_interface__,
-        style_function=lambda x: {
-            'color': 'blue',
-            'weight': 2,
-            'opacity': 0.5
-        }
-    ).add_to(m)
-    
-    # Create a map with points selection capability
-    col1, col2 = st.columns([3, 1])
+    # Create a more intuitive layout
+    col1, col2 = st.columns([2, 1])
     
     with col1:
+        # Create base map just for visualization
+        m = folium.Map(
+            location=[gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()],
+            zoom_start=13,
+            tiles="CartoDB positron"
+        )
+        
+        # Add road network
+        folium.GeoJson(
+            gdf.__geo_interface__,
+            style_function=lambda x: {
+                'color': 'blue',
+                'weight': 2,
+                'opacity': 0.5
+            }
+        ).add_to(m)
+        
         # Use Streamlit's implementation to render the map
-        map_data = folium_static(m)
+        folium_static(m)
         
     with col2:
-        st.write("Instructions:")
-        st.markdown("""
-        1. Click on the map to select your starting point
-        2. Click again to select your destination
-        3. Press 'Find Route' to calculate the shortest path
-        """)
+        st.write("Point Selection Options:")
+        selection_method = st.radio(
+            "How would you like to select points?",
+            ["Use coordinates", "Choose landmarks"]
+        )
         
-        # Since we can't directly capture clicks with Streamlit, provide input boxes
-        st.subheader("Start Point")
-        start_lat = st.number_input("Start Latitude", 
-                                    value=gdf.geometry.centroid.y.mean(),
-                                    format="%.6f")
-        start_lon = st.number_input("Start Longitude", 
-                                    value=gdf.geometry.centroid.x.mean(),
-                                    format="%.6f")
-        
-        st.subheader("End Point")
-        end_lat = st.number_input("End Latitude", 
-                                  value=gdf.geometry.centroid.y.mean() + 0.01,
-                                  format="%.6f")
-        end_lon = st.number_input("End Longitude", 
-                                  value=gdf.geometry.centroid.x.mean() + 0.01,
-                                  format="%.6f")
-        
-        # Button to find route
-        find_route = st.button("Find Route")
+        if selection_method == "Use coordinates":
+            # Provide input boxes
+            st.subheader("Start Point")
+            start_lat = st.number_input("Start Latitude", 
+                                        value=gdf.geometry.centroid.y.mean(),
+                                        format="%.6f",
+                                        key="start_lat")
+            start_lon = st.number_input("Start Longitude", 
+                                        value=gdf.geometry.centroid.x.mean(),
+                                        format="%.6f",
+                                        key="start_lon")
+            
+            st.subheader("End Point")
+            end_lat = st.number_input("End Latitude", 
+                                    value=gdf.geometry.centroid.y.mean() + 0.01,
+                                    format="%.6f",
+                                    key="end_lat")
+            end_lon = st.number_input("End Longitude", 
+                                    value=gdf.geometry.centroid.x.mean() + 0.01,
+                                    format="%.6f",
+                                    key="end_lon")
+                                    
+        else:  # Choose landmarks
+            # Extract centroids of major roads
+            major_roads = gdf[gdf['highway'].isin(['motorway', 'trunk', 'primary', 'secondary'])]
+            
+            if len(major_roads) > 0:
+                # Extract points along the roads (start and end points of each segment)
+                landmarks = []
+                
+                for idx, row in major_roads.iterrows():
+                    if row.geometry is not None and not row.geometry.is_empty:
+                        try:
+                            # Get first and last point of each linestring
+                            start_point = Point(row.geometry.coords[0])
+                            end_point = Point(row.geometry.coords[-1])
+                            
+                            # Add points with names
+                            if 'name' in row:
+                                landmarks.append((f"{row['name']} (Start)", start_point.y, start_point.x))
+                                landmarks.append((f"{row['name']} (End)", end_point.y, end_point.x))
+                            else:
+                                landmarks.append((f"{row['highway']} Road {idx} (Start)", start_point.y, start_point.x))
+                                landmarks.append((f"{row['highway']} Road {idx} (End)", end_point.y, end_point.x))
+                        except (IndexError, AttributeError):
+                            continue
+                
+                # Limit to a reasonable number of landmarks
+                if len(landmarks) > 100:
+                    landmarks = landmarks[:100]
+                
+                # Create dropdowns for landmarks
+                landmark_names = [l[0] for l in landmarks]
+                
+                st.subheader("Start Point")
+                start_landmark_idx = st.selectbox(
+                    "Select start landmark", 
+                    range(len(landmark_names)),
+                    format_func=lambda i: landmark_names[i],
+                    key="start_landmark"
+                )
+                
+                st.subheader("End Point")
+                end_landmark_idx = st.selectbox(
+                    "Select end landmark", 
+                    range(len(landmark_names)),
+                    format_func=lambda i: landmark_names[i],
+                    index=min(1, len(landmark_names)-1),
+                    key="end_landmark"
+                )
+                
+                # Get coordinates for selected landmarks
+                start_lat, start_lon = landmarks[start_landmark_idx][1], landmarks[start_landmark_idx][2]
+                end_lat, end_lon = landmarks[end_landmark_idx][1], landmarks[end_landmark_idx][2]
+                
+                # Display the selected coordinates
+                st.write(f"Start: ({start_lat:.6f}, {start_lon:.6f})")
+                st.write(f"End: ({end_lat:.6f}, {end_lon:.6f})")
+            else:
+                st.warning("No major roads found for landmark selection. Please use coordinates instead.")
+                # Fall back to coordinate inputs
+                st.subheader("Start Point")
+                start_lat = st.number_input("Start Latitude", 
+                                            value=gdf.geometry.centroid.y.mean(),
+                                            format="%.6f",
+                                            key="fallback_start_lat")
+                start_lon = st.number_input("Start Longitude", 
+                                            value=gdf.geometry.centroid.x.mean(),
+                                            format="%.6f",
+                                            key="fallback_start_lon")
+                
+                st.subheader("End Point")
+                end_lat = st.number_input("End Latitude", 
+                                        value=gdf.geometry.centroid.y.mean() + 0.01,
+                                        format="%.6f",
+                                        key="fallback_end_lat")
+                end_lon = st.number_input("End Longitude", 
+                                        value=gdf.geometry.centroid.x.mean() + 0.01,
+                                        format="%.6f",
+                                        key="fallback_end_lon")
+    
+    # Button to find route
+    find_route = st.button("Find Route")
     
     # Find and display route
     if find_route:
