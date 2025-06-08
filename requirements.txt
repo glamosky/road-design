@@ -9,4 +9,6 @@ folium
 pyproj
 fiona
 shapely
+streamlit-folium
+numpy
 
