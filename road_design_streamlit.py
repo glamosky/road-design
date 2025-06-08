@@ -25,12 +25,12 @@ st.set_page_config(page_title="City Road Network Explorer", layout="wide")
 def load_data():
     # Load road data
     # uncomment if deploying to streamlit cloud
-    # gdf_baguio = gpd.read_file("gpkg_exports/baguio_roads.gpkg")
-    # gdf_zurich = gpd.read_file("gpkg_exports/zurich_roads.gpkg")
+    gdf_baguio = gpd.read_file("gpkg_exports/baguio_roads.gpkg")
+    gdf_zurich = gpd.read_file("gpkg_exports/zurich_roads.gpkg")
     
     # uncomment if running locally
-    gdf_baguio = gpd.read_file("C:/Users/franj/notebooks/road design/road-design/gpkg_exports/baguio_roads.gpkg")
-    gdf_zurich = gpd.read_file("C:/Users/franj/notebooks/road design/road-design/gpkg_exports/zurich_roads.gpkg")
+    # gdf_baguio = gpd.read_file("C:/Users/franj/notebooks/road design/road-design/gpkg_exports/baguio_roads.gpkg")
+    # gdf_zurich = gpd.read_file("C:/Users/franj/notebooks/road design/road-design/gpkg_exports/zurich_roads.gpkg")
     
     # Calculate additional metrics for each road
     for gdf in [gdf_baguio, gdf_zurich]:
