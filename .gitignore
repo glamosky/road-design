@@ -45,13 +45,13 @@ ENV/
 Thumbs.db
 
 # Large files
-*.tif
-*.tiff
+# *.tif
+# *.tiff
 *.gpkg
 cache/
-*.png
-*.jpg
-*.jpeg
+# *.png
+# *.jpg
+# *.jpeg
 
 # Environment variables
 .env
